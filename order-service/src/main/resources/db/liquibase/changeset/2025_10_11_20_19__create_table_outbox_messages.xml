@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.20.xsd">
+
+    <changeSet author="Leonid Romanov" id="2025_10_11_20_19">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="outbox_messages"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="outbox_messages"
+                     remarks="Таблица хранения сообщений для отправки в брокер Kafka через встроенный в библиотеку outbox-worker">
+
+            <column name="id" type="uuid" remarks="Идентификатор">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="mini_outbox_messages_pk"/>
+            </column>
+
+            <column name="key" type="uuid" remarks="Ключ сообщения в Kafka">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="topic" type="varchar(255)" remarks="Целевой топик в Kafka">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="headers" type="jsonb" remarks="Хедеры сообщения">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="payload" type="json" remarks="Тело сообщения">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="kafka_system" type="varchar(20)" remarks="Система в которую отправлются сообщения">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="varchar(20)" remarks="Статусы сообщений ('NEW', 'SUCCESS', 'FAILURE')">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="reserved_to" type="timestamp with time zone"
+                    remarks="Специальной лок который резервирует сообщение на определенное время">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="create_time" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="update_time" type="timestamp with time zone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+</databaseChangeLog>
