@@ -2,19 +2,19 @@ spring:
   application:
     name: order-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/user_db
-    username: user_admin
-    password: user_password
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/order_db
+    username: ${POSTGRES_USER:order_service_usr}
+    password: ${POSTGRES_PASS:order_service_pwd}
   liquibase:
     change-log: db/liquibase/changelog.xml
-    url: jdbc:postgresql://localhost:5432/user_db
-    user: user_admin
-    password: user_password
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/order_db
+    user: ${LIQUIBASE_USER:order_service_usr}
+    password: ${LIQUIBASE_PASS:order_service_pwd}
 
 streaming:
   enabled: true
   outbox:
-    table-name: outbox_messages
+    table-name: ${OUTBOX_TABLE:outbox_messages}
 
 management:
   endpoints:
@@ -23,9 +23,11 @@ management:
         include: health,info,prometheus,metrics
   endpoint:
     prometheus:
-      enabled: true
-    health:
-      show-details: always
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
   metrics:
     distribution:
       percentiles-histogram:
@@ -35,3 +37,19 @@ management:
     tags:
       application: ${spring.application.name}
       environment: local
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+logging:
+  config: "classpath:logback.xml"
