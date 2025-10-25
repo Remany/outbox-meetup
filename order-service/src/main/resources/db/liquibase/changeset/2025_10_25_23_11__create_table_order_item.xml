@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet author="Leonid Romanov" id="2025_10_25_23_11">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="order_item"/>
+                <indexExists tableName="order_item" indexName="order_item__idx_order_id"/>
+                <indexExists tableName="order_item" indexName="order_item__idx_product_id"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="order_item">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="order_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="product_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="product_name" type="varchar(500)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="quantity" type="int">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="price" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="order_item" indexName="order_item__idx_order_id">
+            <column name="order_id"/>
+        </createIndex>
+
+        <createIndex tableName="order_item" indexName="order_item__idx_product_id">
+            <column name="product_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint baseTableName="order_item"
+                                 baseColumnNames="order_id"
+                                 constraintName="order_item_fk__order_id"
+                                 referencedTableName="orders"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"/>
+    </changeSet>
+
+</databaseChangeLog>

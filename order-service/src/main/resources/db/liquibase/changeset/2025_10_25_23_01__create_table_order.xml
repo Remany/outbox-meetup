@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet author="Leonid Romanov" id="2025_10_25_23_01">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="orders"/>
+                <indexExists tableName="orders" indexName="orders__idx_customer_id"/>
+                <indexExists tableName="orders" indexName="orders__idx_status"/>
+                <indexExists tableName="orders" indexName="orders__idx_created_at"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="orders">
+            <column name="id" type="uuid">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+
+            <column name="customer_email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="customer_id" type="uuid">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="customer_tin" type="varchar(20)"/>
+
+            <column name="total_amount" type="decimal(19,2)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_at" type="timestamp without timezone">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="updated_at" type="timestamp without timezone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="orders" indexName="orders__idx_customer_id">
+            <column name="customer_id"/>
+        </createIndex>
+
+        <createIndex tableName="orders" indexName="orders__idx_status">
+            <column name="status"/>
+        </createIndex>
+
+        <createIndex tableName="orders" indexName="orders__idx_created_at">
+            <column name="created_at"/>
+        </createIndex>
+
+        <addForeignKeyConstraint baseTableName="orders"
+                                 baseColumnNames="customer_id"
+                                 constraintName="orders_fk__customer_id"
+                                 referencedTableName="customer"
+                                 referencedColumnNames="id"/>
+    </changeSet>
+
+</databaseChangeLog>

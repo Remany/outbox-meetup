@@ -8,12 +8,14 @@ services:
       POSTGRES_PASSWORD: order_service_pwd
       POSTGRES_DB: order_db
     ports:
-      - "5434:5432"
+      - "5432:5432"
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres -p 5432" ]
       interval: 10s
       timeout: 5s
       retries: 20
+    networks:
+      - meetup-system-net
 
   prometheus:
     image: prom/prometheus:v3.6.0
@@ -27,6 +29,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - meetup-system-net
 
   loki:
     image: grafana/loki:2.9.2
@@ -40,6 +44,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - meetup-system-net
 
   tempo:
     image: grafana/tempo:2.4.1
@@ -50,6 +56,8 @@ services:
       - tempo_data:/var/tempo
     ports:
       - "3200:3200"
+    networks:
+      - meetup-system-net
 
   alloy:
     image: grafana/alloy:latest
@@ -71,6 +79,8 @@ services:
       - --server.http.listen-addr=0.0.0.0:9080
       - --storage.path=/var/lib/alloy/data
       - /etc/alloy/config.alloy
+    networks:
+      - meetup-system-net
 
   grafana:
     image: grafana/grafana:10.3.1
@@ -100,6 +110,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - meetup-system-net
 
   order-service:
     build:
@@ -108,19 +120,43 @@ services:
     container_name: order-service
     ports:
       - "8080:8080"
+      - "8051:8051"  # Добавлен порт для JMX
     working_dir: /app
     environment:
       POSTGRES_HOST: order-service-db
       POSTGRES_PORT: 5432
       OTLP_EXPORTER_ENDPOINT: http://tempo:4318
+      COMMON_KAFKA_BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9094,kafka3:9096
+      FNS_KAFKA_BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9094,kafka3:9096
+      CBR_KAFKA_BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9094,kafka3:9096
+      RPN_KAFKA_BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9094,kafka3:9096
+      ROSSTAT_KAFKA_BOOTSTRAP_SERVERS: kafka1:9092,kafka2:9094,kafka3:9096
+      OUTBOX_CONCURRENCY: 12
+      HIKARI_CP_MIN_IDLE: 5
+      HIKARI_CP_MAX_POOL_SIZE: 20
+      JAVA_TOOL_OPTIONS: >-
+        -Xmx1536m 
+        -Xms512m 
+        -XX:MaxRAM=2g 
+        -Dcom.sun.management.jmxremote=true
+        -Dcom.sun.management.jmxremote.port=8051
+        -Dcom.sun.management.jmxremote.local.only=false
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Dcom.sun.management.jmxremote.ssl=false
+        -Dcom.sun.management.jmxremote.rmi.port=8051
+        -Djava.rmi.server.hostname=localhost
     depends_on:
       order-service-db:
         condition: service_healthy
+    mem_limit: 2g
+    mem_reservation: 1g
     healthcheck:
-      test: [ "CMD", "curl", "-i", "http://localhost:8080/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 5s
       timeout: 5s
       retries: 30
+    networks:
+      - meetup-system-net
 
   nexus:
     image: sonatype/nexus3:3.76.0
@@ -137,6 +173,108 @@ services:
       interval: 5s
       timeout: 10s
       retries: 30
+    networks:
+      - meetup-system-net
+
+  kafka1:
+    image: confluentinc/cp-kafka:7.8.0
+    hostname: kafka1
+    container_name: kafka1
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_BROKER_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:9092,CONTROLLER://kafka1:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - ./kafka1/data:/var/lib/kafka/data
+    networks:
+      - meetup-system-net
+
+  kafka2:
+    image: confluentinc/cp-kafka:7.8.0
+    hostname: kafka2
+    container_name: kafka2
+    ports:
+      - "9094:9092"
+      - "9095:9093"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_BROKER_ID: 2
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:9092,CONTROLLER://kafka2:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - ./kafka2/data:/var/lib/kafka/data
+    networks:
+      - meetup-system-net
+
+  kafka3:
+    image: confluentinc/cp-kafka:7.8.0
+    hostname: kafka3
+    container_name: kafka3
+    ports:
+      - "9096:9092"
+      - "9097:9093"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_BROKER_ID: 3
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:9092,CONTROLLER://kafka3:9093'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
+      KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
+      KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
+      CLUSTER_ID: 'EmptNWtoR4GGWx-BH6nGLQ'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+    volumes:
+      - ./kafka3/data:/var/lib/kafka/data
+    networks:
+      - meetup-system-net
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-cluster-ui
+    ports:
+      - "8082:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka1:9092,kafka2:9092,kafka3:9092
+    depends_on:
+      - kafka1
+      - kafka2
+      - kafka3
+    networks:
+      - meetup-system-net
+
+networks:
+  meetup-system-net:
+    driver: bridge
 
 volumes:
   artifacts:

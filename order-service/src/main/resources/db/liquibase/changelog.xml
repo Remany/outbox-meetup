@@ -7,4 +7,10 @@
 
     <include file="db/liquibase/changeset/2025_10_11_20_19__create_table_outbox_messages.xml"
              relativeToChangelogFile="false"/>
+    <include file="db/liquibase/changeset/2025_10_25_22_56__create_table_customer.xml"
+             relativeToChangelogFile="false"/>
+    <include file="db/liquibase/changeset/2025_10_25_23_01__create_table_order.xml"
+             relativeToChangelogFile="false"/>
+    <include file="db/liquibase/changeset/2025_10_25_23_11__create_table_order_item.xml"
+             relativeToChangelogFile="false"/>
 </databaseChangeLog>

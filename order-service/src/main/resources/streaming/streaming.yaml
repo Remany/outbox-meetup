@@ -1,0 +1,18 @@
+streaming:
+  enabled: true
+  outbox:
+    table-name: ${OUTBOX_TABLE:outbox_messages}
+    source-id: order-service
+    concurrency: ${OUTBOX_CONCURRENCY:10}
+  kafka:
+    producer:
+      acks: "1"
+      enable-idempotence-config: false
+      max-in-flight-requests: 20
+      batch-size: 1_000_000
+      linger-ms: 30
+    systems:
+      common-system:
+        bootstrap-servers: ${COMMON_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        ssl:
+          enabled: ${COMMON_KAFKA_SSL_ENABLED:false}

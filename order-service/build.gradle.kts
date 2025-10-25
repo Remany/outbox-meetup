@@ -7,10 +7,11 @@ plugins {
 }
 
 group = "ru.romanov"
-version = "1.0.0"
+version = "1.0.18"
 description = "order-service"
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven {
         name = "nexus"
@@ -37,7 +38,7 @@ java {
 
 val versions = mapOf(
     "logbackVersion" to "1.5.18",
-    "outboxLibVersion" to "1.0.0",
+    "outboxLibVersion" to "1.0.19",
     "opentelemetryBomVersion" to "2.15.0"
 )
 
@@ -52,6 +53,7 @@ dependencies {
     implementation("ru.romanov:outbox-processor:${versions["outboxLibVersion"]}")
 
     // SPRING
+    implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
@@ -127,7 +129,7 @@ publishing {
                 artifact(jarFile)
                 groupId = "ru.romanov"
                 artifactId = jarBaseName
-                version = "1.0.0"
+                version = "1.0.18"
             }
         }
     }
