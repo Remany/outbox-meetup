@@ -64,51 +64,48 @@
     },
     {
       "id": 4,
-      "title": "Outbox End-to-End Latency (p50 / p95 / p99)",
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
       "type": "timeseries",
+      "title": "Outbox Stored to Attempt Latency (Mean & Max)",
+      "datasource": "Prometheus",
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, sum(rate(outbox_end_to_end_latency_seconds_bucket[1m])) by (le))",
-          "legendFormat": "p50"
+          "expr": "rate(outbox_stored_to_attempt_latency_seconds_sum[1m]) / rate(outbox_stored_to_attempt_latency_seconds_count[1m])",
+          "legendFormat": "{{approach}} (mean)",
+          "refId": "A"
         },
         {
-          "expr": "histogram_quantile(0.95, sum(rate(outbox_end_to_end_latency_seconds_bucket[1m])) by (le))",
-          "legendFormat": "p95"
-        },
-        {
-          "expr": "histogram_quantile(0.99, sum(rate(outbox_end_to_end_latency_seconds_bucket[1m])) by (le))",
-          "legendFormat": "p99"
+          "expr": "max_over_time(outbox_stored_to_attempt_latency_seconds_max[5m])",
+          "legendFormat": "{{approach}} (max)",
+          "refId": "B"
         }
       ],
       "fieldConfig": {
         "defaults": {
           "unit": "s",
-          "color": {
-            "mode": "thresholds"
-          },
-          "thresholds": {
-            "steps": [
-              {
-                "value": null,
-                "color": "green"
-              },
-              {
-                "value": 0.2,
-                "color": "yellow"
-              },
-              {
-                "value": 0.5,
-                "color": "red"
-              }
-            ]
+          "decimals": 3,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
           }
         }
       },
-      "gridPos": {
-        "x": 0,
-        "y": 6,
-        "w": 12,
-        "h": 7
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
       }
     },
     {

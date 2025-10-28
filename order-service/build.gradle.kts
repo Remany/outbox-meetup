@@ -7,7 +7,7 @@ plugins {
 }
 
 group = "ru.romanov"
-version = "1.0.29"
+version = "1.0.30"
 description = "order-service"
 
 repositories {
@@ -38,7 +38,7 @@ java {
 
 val versions = mapOf(
     "logbackVersion" to "1.5.18",
-    "outboxLibVersion" to "1.0.30",
+    "outboxLibVersion" to "1.0.31",
     "opentelemetryBomVersion" to "2.15.0"
 )
 
@@ -129,7 +129,7 @@ publishing {
                 artifact(jarFile)
                 groupId = "ru.romanov"
                 artifactId = jarBaseName
-                version = "1.0.29"
+                version = "1.0.30"
             }
         }
     }
