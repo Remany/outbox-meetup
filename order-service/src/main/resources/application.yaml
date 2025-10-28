@@ -1,6 +1,9 @@
 spring:
   application:
     name: order-service
+  threads:
+    virtual:
+      enabled: true
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/order_db
     username: ${POSTGRES_USER:order_service_usr}

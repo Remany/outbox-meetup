@@ -1,6 +1,10 @@
 {
   "title": "Transactional Outbox Performance Dashboard",
-  "tags": ["outbox", "kafka", "performance"],
+  "tags": [
+    "outbox",
+    "kafka",
+    "performance"
+  ],
   "timezone": "browser",
   "schemaVersion": 39,
   "version": 2,
@@ -18,13 +22,24 @@
         }
       ],
       "options": {
-        "reduceOptions": {"calcs": ["mean"], "fields": "", "values": false},
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
         "orientation": "horizontal",
         "colorMode": "value",
         "graphMode": "area",
         "justifyMode": "center"
       },
-      "gridPos": {"x": 0, "y": 0, "w": 6, "h": 6}
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 6
+      }
     },
     {
       "id": 2,
@@ -40,20 +55,61 @@
           "legendFormat": "Sent to Kafka"
         }
       ],
-      "gridPos": {"x": 6, "y": 0, "w": 18, "h": 6}
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 18,
+        "h": 6
+      }
     },
     {
       "id": 4,
-      "title": "Kafka Request Latency (95th percentile)",
+      "title": "Outbox End-to-End Latency (p50 / p95 / p99)",
       "type": "timeseries",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(kafka_producer_request_latency_ms_bucket[1m])) by (le))",
+          "expr": "histogram_quantile(0.5, sum(rate(outbox_end_to_end_latency_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(outbox_end_to_end_latency_seconds_bucket[1m])) by (le))",
           "legendFormat": "p95"
+        },
+        {
+          "expr": "histogram_quantile(0.99, sum(rate(outbox_end_to_end_latency_seconds_bucket[1m])) by (le))",
+          "legendFormat": "p99"
         }
       ],
-      "fieldConfig": {"defaults": {"unit": "s"}},
-      "gridPos": {"x": 0, "y": 6, "w": 12, "h": 7}
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "steps": [
+              {
+                "value": null,
+                "color": "green"
+              },
+              {
+                "value": 0.2,
+                "color": "yellow"
+              },
+              {
+                "value": 0.5,
+                "color": "red"
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 6,
+        "w": 12,
+        "h": 7
+      }
     },
     {
       "type": "timeseries",
@@ -66,12 +122,22 @@
           "legendFormat": "{{approach}}"
         }
       ],
-      "gridPos": {"x": 12, "y": 6, "w": 6, "h": 7},
+      "gridPos": {
+        "x": 12,
+        "y": 6,
+        "w": 6,
+        "h": 7
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "MB",
-          "color": {"mode": "palette-classic"},
-          "custom": {"drawStyle": "lines", "lineInterpolation": "smooth"}
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "smooth"
+          }
         }
       }
     },
@@ -86,11 +152,18 @@
           "legendFormat": "{{approach}}"
         }
       ],
-      "gridPos": {"x": 18, "y": 6, "w": 6, "h": 7},
+      "gridPos": {
+        "x": 18,
+        "y": 6,
+        "w": 6,
+        "h": 7
+      },
       "fieldConfig": {
         "defaults": {
           "unit": "percent",
-          "color": {"mode": "palette-classic"}
+          "color": {
+            "mode": "palette-classic"
+          }
         }
       }
     },
@@ -108,7 +181,12 @@
           "legendFormat": "Errors"
         }
       ],
-      "gridPos": {"x": 0, "y": 13, "w": 24, "h": 8}
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 8
+      }
     }
   ],
   "templating": {
@@ -122,9 +200,17 @@
         "refresh": 2,
         "multi": true,
         "includeAll": true,
-        "current": {"text": "All", "value": ["$__all"]}
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        }
       }
     ]
   },
-  "time": {"from": "now-15m", "to": "now"}
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  }
 }

@@ -1,4 +1,4 @@
-FROM gradle:8.14.2-jdk17 AS build
+FROM gradle:8.14.2-jdk24 AS build
 
 ARG NEXUS_URL=http://host.docker.internal:8081/repository/maven-releases
 ARG NEXUS_USERNAME=admin
@@ -19,7 +19,7 @@ WORKDIR /home/gradle/project
 RUN gradle --no-daemon clean build -x test
 RUN gradle publish --info
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:24-jre
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 

@@ -1,16 +1,17 @@
 streaming:
   enabled: true
   outbox:
+    virtual-threads-enabled: ${OUTBOX_VIRTUAL_THREADS_ENABLED:true}
     table-name: ${OUTBOX_TABLE:outbox_messages}
     source-id: order-service
     concurrency: ${OUTBOX_CONCURRENCY:10}
     recovery:
-      cron: ${OUTBOX_RECOVERY_CRON:*/30 * * * * *}
-      limit: ${OUTBOX_RECOVERY_LIMIT}
+      cron: ${OUTBOX_RECOVERY_CRON:*/10 * * * * *}
+      limit: ${OUTBOX_RECOVERY_LIMIT:10000}
     scheduled:
-      limit: ${OUTBOX_SCHEDULED_LIMIT}
-      delay: ${OUTBOX_SCHEDULED_DELAY}
-      enabled: ${OUTBOX_SCHEDULED_ENABLED}
+      limit: ${OUTBOX_SCHEDULED_LIMIT:1000}
+      delay: ${OUTBOX_SCHEDULED_DELAY:1000}
+      enabled: ${OUTBOX_SCHEDULED_ENABLED:false}
   kafka:
     producer:
       acks: "1"
