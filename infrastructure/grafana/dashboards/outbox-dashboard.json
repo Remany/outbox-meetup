@@ -109,7 +109,7 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, rate(kafka_producer_request_latency_bucket[1m]))",
+          "expr": "histogram_quantile(0.95, sum(rate(kafka_producer_request_latency_ms_bucket[1m])) by (le))",
           "legendFormat": "p95"
         }
       ],
@@ -188,8 +188,8 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "outbox_events_pending - (rate(kafka_producer_record_send_total[1m]) * 60)",
-          "legendFormat": "Estimated Backlog"
+          "expr": "outbox_events_stored_total - outbox_kafka_publication_success_total",
+          "legendFormat": "Estimated Backlog (stored - sent)"
         }
       ],
       "fieldConfig": {
@@ -267,15 +267,15 @@
       "type": "timeseries",
       "targets": [
         {
-          "expr": "histogram_quantile(0.5, rate(kafka_producer_request_latency_bucket[1m]))",
+          "expr": "histogram_quantile(0.5, sum(rate(kafka_producer_request_latency_ms_bucket[1m])) by (le))",
           "legendFormat": "p50"
         },
         {
-          "expr": "histogram_quantile(0.95, rate(kafka_producer_request_latency_bucket[1m]))",
+          "expr": "histogram_quantile(0.95, sum(rate(kafka_producer_request_latency_ms_bucket[1m])) by (le))",
           "legendFormat": "p95"
         },
         {
-          "expr": "histogram_quantile(0.99, rate(kafka_producer_request_latency_bucket[1m]))",
+          "expr": "histogram_quantile(0.99, sum(rate(kafka_producer_request_latency_ms_bucket[1m])) by (le))",
           "legendFormat": "p99"
         }
       ],

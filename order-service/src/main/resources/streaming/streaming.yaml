@@ -4,6 +4,13 @@ streaming:
     table-name: ${OUTBOX_TABLE:outbox_messages}
     source-id: order-service
     concurrency: ${OUTBOX_CONCURRENCY:10}
+    recovery:
+      cron: ${OUTBOX_RECOVERY_CRON:*/30 * * * * *}
+      limit: ${OUTBOX_RECOVERY_LIMIT}
+    scheduled:
+      limit: ${OUTBOX_SCHEDULED_LIMIT}
+      delay: ${OUTBOX_SCHEDULED_DELAY}
+      enabled: ${OUTBOX_SCHEDULED_ENABLED}
   kafka:
     producer:
       acks: "1"
