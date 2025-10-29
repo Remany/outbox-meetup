@@ -1,20 +1,42 @@
 spring:
   application:
     name: order-service
+  threads:
+    virtual:
+      enabled: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/user_db
-    username: user_admin
-    password: user_password
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/order_db
+    username: ${POSTGRES_USER:order_service_usr}
+    password: ${POSTGRES_PASS:order_service_pwd}
+    hikari:
+      maximum-pool-size: ${HIKARI_CP_MAX_POOL_SIZE:20}
+      minimum-idle: ${HIKARI_CP_MIN_IDLE:5}
+
+      connection-timeout: 10000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+
+      keepalive-time: 15000
+      validation-timeout: 2000
+
+      leak-detection-threshold: 30000
+      initialization-fail-timeout: -1
+
+      data-source-properties:
+        socketTimeout: 30
+        prepStmtCacheSize: 500
+        prepStmtCacheSqlLimit: 2048
+        cachePrepStmts: true
+        useServerPrepStmts: true
+  jpa:
+    open-in-view: false
   liquibase:
     change-log: db/liquibase/changelog.xml
-    url: jdbc:postgresql://localhost:5432/user_db
-    user: user_admin
-    password: user_password
-
-streaming:
-  enabled: true
-  outbox:
-    table-name: outbox_messages
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/order_db
+    user: ${LIQUIBASE_USER:order_service_usr}
+    password: ${LIQUIBASE_PASS:order_service_pwd}
+  config:
+    import: classpath:streaming/streaming.yaml
 
 management:
   endpoints:
@@ -23,9 +45,11 @@ management:
         include: health,info,prometheus,metrics
   endpoint:
     prometheus:
-      enabled: true
-    health:
-      show-details: always
+      access: read_only
+  prometheus:
+    metrics:
+      export:
+        enabled: true
   metrics:
     distribution:
       percentiles-histogram:
@@ -35,3 +59,19 @@ management:
     tags:
       application: ${spring.application.name}
       environment: local
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+otel:
+  exporter:
+    otlp:
+      endpoint: ${OTLP_EXPORTER_ENDPOINT:http://localhost:4318}
+      protocol: http/protobuf
+  logs:
+    exporter: none
+  metrics:
+    exporter: none
+logging:
+  config: "classpath:logback.xml"

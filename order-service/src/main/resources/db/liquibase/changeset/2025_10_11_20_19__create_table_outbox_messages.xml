@@ -19,7 +19,7 @@
                 <constraints nullable="false" primaryKey="true" primaryKeyName="mini_outbox_messages_pk"/>
             </column>
 
-            <column name="key" type="uuid" remarks="Ключ сообщения в Kafka">
+            <column name="key" type="varchar(255)" remarks="Ключ сообщения в Kafka">
                 <constraints nullable="false"/>
             </column>
 
