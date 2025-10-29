@@ -1,0 +1,213 @@
+{
+  "title": "Transactional Outbox Performance Dashboard",
+  "tags": [
+    "outbox",
+    "kafka",
+    "performance"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 2,
+  "refresh": "5s",
+  "panels": [
+    {
+      "type": "stat",
+      "title": "Requests Per Second (RPS)",
+      "id": 1,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(http_server_requests_seconds_count{uri='/api/v1/order'}[1m])",
+          "legendFormat": "{{approach}}"
+        }
+      ],
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "mean"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "orientation": "horizontal",
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "center"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 0,
+        "w": 6,
+        "h": 6
+      }
+    },
+    {
+      "id": 2,
+      "title": "Event Flow (Incoming vs Kafka Sent)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(outbox_events_stored_total[1m])",
+          "legendFormat": "Incoming (to Outbox)"
+        },
+        {
+          "expr": "rate(kafka_producer_record_send_total[1m])",
+          "legendFormat": "Sent to Kafka"
+        }
+      ],
+      "gridPos": {
+        "x": 6,
+        "y": 0,
+        "w": 18,
+        "h": 6
+      }
+    },
+    {
+      "id": 4,
+      "gridPos": {
+        "h": 7,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "type": "timeseries",
+      "title": "Outbox Stored to Attempt Latency (Mean & Max)",
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "rate(outbox_stored_to_attempt_latency_seconds_sum[1m]) / rate(outbox_stored_to_attempt_latency_seconds_count[1m])",
+          "legendFormat": "{{approach}} (mean)",
+          "refId": "A"
+        },
+        {
+          "expr": "max_over_time(outbox_stored_to_attempt_latency_seconds_max[5m])",
+          "legendFormat": "{{approach}} (max)",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "decimals": 3,
+          "custom": {
+            "drawStyle": "line",
+            "lineWidth": 2,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        }
+      },
+      "options": {
+        "legend": {
+          "showLegend": true,
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Memory Usage (MB)",
+      "id": 5,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "avg_over_time(jvm_memory_used_bytes{area=\"heap\"}[1m]) / 1024 / 1024",
+          "legendFormat": "{{approach}}"
+        }
+      ],
+      "gridPos": {
+        "x": 12,
+        "y": 6,
+        "w": 6,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "MB",
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "drawStyle": "lines",
+            "lineInterpolation": "smooth"
+          }
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "CPU Load (%)",
+      "id": 6,
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "avg_over_time(process_cpu_usage[1m]) * 100",
+          "legendFormat": "{{approach}}"
+        }
+      ],
+      "gridPos": {
+        "x": 18,
+        "y": 6,
+        "w": 6,
+        "h": 7
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "color": {
+            "mode": "palette-classic"
+          }
+        }
+      }
+    },
+    {
+      "id": 10,
+      "title": "Kafka Producer Throughput (records/sec)",
+      "type": "timeseries",
+      "targets": [
+        {
+          "expr": "rate(kafka_producer_record_send_total[1m])",
+          "legendFormat": "Records Sent"
+        },
+        {
+          "expr": "rate(kafka_producer_record_error_total[1m])",
+          "legendFormat": "Errors"
+        }
+      ],
+      "gridPos": {
+        "x": 0,
+        "y": 13,
+        "w": 24,
+        "h": 8
+      }
+    }
+  ],
+  "templating": {
+    "list": [
+      {
+        "name": "approach",
+        "label": "Approach",
+        "type": "query",
+        "datasource": "Prometheus",
+        "query": "label_values(app_outbox_rps_total, approach)",
+        "refresh": 2,
+        "multi": true,
+        "includeAll": true,
+        "current": {
+          "text": "All",
+          "value": [
+            "$__all"
+          ]
+        }
+      }
+    ]
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  }
+}

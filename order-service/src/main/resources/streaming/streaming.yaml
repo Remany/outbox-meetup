@@ -1,0 +1,26 @@
+streaming:
+  enabled: true
+  outbox:
+    virtual-threads-enabled: ${OUTBOX_VIRTUAL_THREADS_ENABLED:true}
+    table-name: ${OUTBOX_TABLE:outbox_messages}
+    source-id: order-service
+    concurrency: ${OUTBOX_CONCURRENCY:10}
+    recovery:
+      cron: ${OUTBOX_RECOVERY_CRON:*/10 * * * * *}
+      limit: ${OUTBOX_RECOVERY_LIMIT:10000}
+    scheduled:
+      limit: ${OUTBOX_SCHEDULED_LIMIT:1000}
+      delay: ${OUTBOX_SCHEDULED_DELAY:1000}
+      enabled: ${OUTBOX_SCHEDULED_ENABLED:false}
+  kafka:
+    producer:
+      acks: "1"
+      enable-idempotence-config: false
+      max-in-flight-requests: 20
+      batch-size: 1_000_000
+      linger-ms: 30
+    systems:
+      common-system:
+        bootstrap-servers: ${COMMON_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        ssl:
+          enabled: ${COMMON_KAFKA_SSL_ENABLED:false}

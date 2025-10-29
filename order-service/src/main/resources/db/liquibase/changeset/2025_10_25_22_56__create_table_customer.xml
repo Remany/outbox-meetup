@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd">
+
+    <changeSet author="Leonid Romanov" id="2025_10_25_22_56">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="customer"/>
+                <indexExists tableName="customer" indexName="customer__idx_email"/>
+                <indexExists tableName="customer" indexName="customer__idx_tin"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="customer">
+            <column name="id" type="uuid">
+                <constraints nullable="false" primaryKey="true" primaryKeyName="customer_pk"/>
+            </column>
+
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+
+            <column name="full_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="tax_identification_number" type="varchar(20)"/>
+
+            <column name="phone_number" type="varchar(20)"/>
+
+            <column name="created_at" type="timestamp without timezone">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <createIndex tableName="customer" indexName="customer__idx_email">
+            <column name="email"/>
+        </createIndex>
+
+        <createIndex tableName="customer" indexName="customer__idx_tin">
+            <column name="tax_identification_number"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
